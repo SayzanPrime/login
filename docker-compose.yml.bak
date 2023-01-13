@@ -1,0 +1,67 @@
+version: "3.8"
+
+services:
+
+  database:
+    image: mysql:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: test_db   
+      MYSQL_USER: yahya
+      MYSQL_PASSWORD: yahya5321
+    networks:
+      - demo-network
+
+  phpmyadmin:
+    depends_on:
+      - database
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "9090:80"
+    environment:
+      PMA_HOST: database
+      MYSQL_ROOT_PASSWORD: admin
+    depends_on:
+      - database
+    networks:
+      - demo-network
+      
+  login:
+    image: login:latest
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://database:3306/test_db
+      SPRING_DATASOURCE_USERNAME: yahya
+      SPRING_DATASOURCE_PASSWORD: yahya5321
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 20s
+        max_attempts: 3
+        window: 120s
+    depends_on:
+      - database
+    networks:
+      - demo-network
+    
+  angular-demo:
+    image: angular-demo:latest
+    ports:
+      - "4200:80"
+    depends_on:
+      - spring-demo
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+
+volumes:
+  db_data:
