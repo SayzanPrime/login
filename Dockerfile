@@ -1,14 +1,14 @@
-FROM openjdk:17-alpine AS build
+FROM maven:latest AS MAVEN_BUILD
 
 WORKDIR /app
 
 COPY . /app
 
-RUN ./mvnw clean package -Dmaven.test.skip=true
+RUN mvn clean package -Dmaven.test.skip=true
 
 FROM openjdk:17-alpine
 
-COPY --from=build /app/target/spring-demo.jar spring-demo.jar
+COPY --from=MAVEN_BUILD /app/target/login.jar login.jar
 
 ENTRYPOINT ["java", "-jar", "/login.jar"]
 
